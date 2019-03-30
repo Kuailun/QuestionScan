@@ -24,6 +24,7 @@ def analyze(check_info,input_info,src):
             if (center[i][1] < y_min):
                 y_min = center[i][1]
 
+
     '''get the minmum interval between boxes vertically'''
     center_sort_y=center
     center_sort_y.sort(key=lambda x:x[1])
@@ -87,11 +88,36 @@ def analyze(check_info,input_info,src):
     #print("box numbers:"+str(len(check_info)))
 
     #processImage.display_img(src)
+
     '''Going into guess and match process'''
-    #if(len(possibleList)==0):
-    #    print(possibleList)
-    #    guess_and_match(matrix,matrix_binary,check_info,src)
-    #    processImage.display_img(src)
+    if(len(possibleList)==0):
+        #matrix,matrix_binary,check_info=guess_and_match(matrix,matrix_binary,check_info,src)
+        #processImage.display_img(src)
+        ret=0
+        '''Guess the first row'''
+        ret=processImage.getSquared(src,[x_min-20,y_min-20-interval_y,40,40])
+        if(ret):
+            matrix=moveMatrixDown(matrix)
+            matrix_binary=moveMatrixDown(matrix_binary)
+            matrix_binary[0][0]=0
+            matrix_binary[1][0] = 0
+            matrix_binary[2][0] = 0
+
+            matrix_binary[0][0] = 1
+            matrix[0][0]=sum(map(sum,matrix_binary))-1
+
+            check_info.append([x_min - 20, y_min - 20 - interval_y, 40, 40, x_min, y_min - interval_y])
+            possibleList = getPossible(matrix_binary)
+
+        '''Guess the last row'''
+        if(matrix_binary[0][0]==matrix_binary[0][1] and matrix_binary[0][2]!=1):
+            ret=processImage.getSquared(src,[x_min-20,y_min-20+2*interval_y,40,40])
+            if(ret):
+                matrix_binary[0][2]=1
+                matrix[0][2]=sum(map(sum,matrix_binary))-1
+                check_info.append([x_min-20,y_min-20+2*interval_y,40,40,x_min,y_min+interval_y*2])
+                possibleList = getPossible(matrix_binary)
+
 
     colors=processImage.colorDetection(src,check_info,possibleList,[x_min,y_min])
     templateID=settleTemplate(colors,possibleList)
@@ -101,7 +127,7 @@ def analyze(check_info,input_info,src):
         print("Template is not settled")
         return -1,0,0
 
-    print("PossibleListe:" + str(possibleList))
+    #print("PossibleListe:" + str(possibleList))
     #print(imageData.image_TargeTitle[templateID])
     '''Final Detect'''
     #printMatrix(matrix)
@@ -188,15 +214,9 @@ def correctMatrix(matrix,check_info,x_min,y_min,interval_x,interval_y):
     return binaryMatrix(matrix),matrix,check_info
 def guess_and_match(matrix,matrix_binary,information,src):
     '''guess and match the matrix with template'''
+
     #printMatrix(matrix)
 
-
-
-    gray=processImage.rgb2gray(src)
-    matrix_bool=[[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1]]
-    for i in range(len(matrix)):
-        for j in range(len(matrix[0])):
-            matrix_bool[i][j]=1-matrix[i][j]
 def finalDetect(src,matrix,templateID,check_info):
     """Final detect of the boxes and return result"""
 
@@ -210,7 +230,7 @@ def finalDetect(src,matrix,templateID,check_info):
     answerChecked=[0 for i in range(num)]
 
     for i in range(num):
-        answerChecked[i]=processImage.getChecked(src,templateID,check_info[i])
+        answerChecked[i]=processImage.getChecked(src,check_info[i])
     print(answerChecked)
 
     return answerChecked,matrix,check_info
@@ -271,3 +291,11 @@ def keyinList(p_list,p_key):
         if(p_key==p_list[i]):
             return True
     return False
+def moveMatrixDown(matrix):
+    matrix[0].insert(0,-1)
+    matrix[1].insert(0, -1)
+    matrix[2].insert(0, -1)
+    matrix[0].pop(-1)
+    matrix[1].pop(-1)
+    matrix[2].pop(-1)
+    return matrix

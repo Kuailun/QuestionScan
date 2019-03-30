@@ -16,6 +16,10 @@ def get_img(p_path):
     src=cv2.imread(p_path)
     return src
 
+def write_img(p_path,name,src):
+    """Write image to path"""
+    cv2.imwrite(p_path+"/"+name,src)
+
 def checkCreate(p_path):
     """Create the directory if not existed"""
     folder=os.path.exists(p_path)
@@ -23,7 +27,7 @@ def checkCreate(p_path):
     if not folder:
         os.makedirs(p_path)
 
-    mFile=open(p_path+"/data.dusp","w")
+    mFile=open(p_path+"/read.json","w")
 
     return mFile
 
@@ -48,8 +52,14 @@ def WriteData(name,index,statusCode,result,info,worksheet):
     worksheet.write(index + 1, 4, imageData.image_TargeTitle[statusCode])
     return
 
-def WriteJson(name,index,statusCode,result,info,mFile):
+StoreBlank=[]
+StoreUnsettled=[]
+def WriteJson(name,index,statusCode,result,info,mFile,dir):
     if(statusCode<0):
+        if(statusCode==-2):
+            StoreBlank.append(name)
+        if(statusCode==-1):
+            StoreUnsettled.append(name)
         return
     choiceLimit=imageData.image_ChoiceLimit[statusCode]
     choiceNum=sum(result)
@@ -64,6 +74,19 @@ def WriteJson(name,index,statusCode,result,info,mFile):
     for i in range(len(result)):
         if(result[i]==1):
             a_id.append(imageData.answerIDforJson[statusCode][i])
+
+    ret=False
+    backName=""
+    if(name.find("-a.png")>=0):
+        backName=name.replace("-a.png","-b.png")
+        ret=os.path.exists(dir+backName)
+    elif(name.find("-b.png")>=0):
+        backName = name.replace("-b.png", "-a.png")
+        ret = os.path.exists(dir + backName)
+
+    if not ret:
+        backName=""
+
     mData=json.dumps({
         "id":str(uuid.uuid4()),#
         "q_id":imageData.templateIDforJson[statusCode],
@@ -76,7 +99,7 @@ def WriteJson(name,index,statusCode,result,info,mFile):
         "free_resp":"",#
         "survey_id":6,#
         "front":name,
-        "back":"",
+        "back":backName,
         "timestamp":str(datetime.datetime.now())
     })
     mFile.write(mData)

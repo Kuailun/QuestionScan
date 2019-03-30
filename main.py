@@ -1,22 +1,25 @@
 import readFile
 import processImage
 import analyzeInformation
+import imageData
 
 
-PROJ_DATA_DIR = 'E:/Workspace/Project/Question/'
-SCAN_DIR = PROJ_DATA_DIR + 'raw/'
+PROJ_DATA_DIR = 'E:/Workspace/Project/ehuntley/'
+SCAN_DIR = PROJ_DATA_DIR + 'scans/raw/'
+JSON_DIR=PROJ_DATA_DIR+'scans/'
+STATIC_DIR=PROJ_DATA_DIR+'www/nextstop/static/cards/exhibit/'
 '''check the directory'''
-mFile=readFile.checkCreate(PROJ_DATA_DIR+"database")
+mFile=readFile.checkCreate(JSON_DIR)
 
 #   Get the file list in a directory
 fileList=readFile.get_file_list(SCAN_DIR)
 
 for i in range(len(fileList)):
-    print("index:"+str(i))
+    print("index:"+str(i)+"  "+str(fileList[i]))
     src=readFile.get_img(SCAN_DIR+fileList[i])
 
     '''return the checkbox information, inputbox information and rotated image'''
-    check_info,input_info,srcc=processImage.pre_process_img(src)
+    check_info,input_info,srcc=processImage.pre_process_img(STATIC_DIR,fileList[i],src)
 
     '''statusCode   =   -2   blank page'''
     '''             =   -1   Not settled image'''
@@ -25,8 +28,10 @@ for i in range(len(fileList)):
     '''info                 checkbox information'''
     '''structure            question structure'''
     statusCode,result,info=analyzeInformation.analyze(check_info,input_info,srcc)
-
+    if(statusCode>=0):
+        print(imageData.image_TargeTitle[statusCode])
     '''Save to file'''
-    readFile.WriteJson(fileList[i],i,statusCode,result,info,mFile)
+    readFile.WriteJson(fileList[i],i,statusCode,result,info,mFile,SCAN_DIR)
+
 mFile.close()
 

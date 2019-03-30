@@ -1,11 +1,13 @@
 import cv2
 import numpy as np
+import readFile
 
-def pre_process_img(src):
+def pre_process_img(p_path,name,src):
     """Process the image and get the box information"""
 
     '''Check whether need to rotate'''
     src = return_rotate(src)
+    readFile.write_img(p_path,name,src)
     img_copy=src
 
     '''Get checkbox informations'''
@@ -252,7 +254,7 @@ def colorDetection(src, check_info, possibleList, point):
     #display_img(src[:, :, 1])
     #display_img(src[:, :, 2])
     return meann
-def getChecked(src,templateID,check_info):
+def getChecked(src,check_info):
     """Return the state of checkbox"""
     x=check_info[0]
     y=check_info[1]
@@ -291,7 +293,37 @@ def getChecked(src,templateID,check_info):
     checked=0
     if(mean2>60 and (rate<0.8 or mean2-mean1>20)):
         checked=1
+    elif (mean2 > 50 and rate < 0.7):
+        checked=1
     print(str(checked)+"   "+str(mean1)+"  "+str(mean2)+"  "+str(rate))
-    if(mean2>60 and (rate<0.8 or mean2-mean1>20)):
-        return 1
-    return 0
+    return checked
+def getSquared(src,check_info):
+    """Return whether this is a checkbox"""
+    x = check_info[0]
+    y = check_info[1]
+    width = check_info[2]
+    height = check_info[3]
+    # print(check_info)
+    if (x < 0):
+        width = width + x
+        x = 0
+    if (y < 0):
+        height = height + y
+        y = 0
+    '''crop the image'''
+    cropImg = src[int(y):int(y + height), int(x):int(x + width)]
+    cropGray = cv2.cvtColor(cropImg, cv2.COLOR_BGR2GRAY)
+    mean = cv2.mean(cropGray)
+    # print(mean)
+    #display_img(cropImg)
+
+    cropImg2=src[int(y-height/2):int(y+3/2*height),int(x-width/2):int(x+3/2*width)]
+    cropGray2=cv2.cvtColor(cropImg2,cv2.COLOR_BGR2GRAY)
+    mean2=cv2.mean(cropGray2)
+    #display_img(cropImg2)
+    rate=mean[0]/mean2[0]
+    square = 0
+    print("mean1:{0},  mean2:{1},  rate:{2}".format(mean[0],mean2[0],rate))
+    if (rate>1.15 or rate<0.85):
+        square = 1
+    return square
