@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import readFile
+import imutils
 
 def pre_process_img(p_path,name,src):
     """Process the image and get the box information"""
@@ -327,3 +328,17 @@ def getSquared(src,check_info):
     if (rate>1.15 or rate<0.85):
         square = 1
     return square
+
+def rotateImage(fileList,frontAngle,backAngle,dir):
+    for i in range(len(fileList)):
+        name = fileList[i]
+        im=cv2.imread(dir+fileList[i])
+        angle=0
+        if (name.find("-a.png") >= 0):
+            '''back'''
+            angle=backAngle
+        elif(name.find("-b.png") >= 0):
+            '''front'''
+            angle=frontAngle
+        nImg=imutils.rotate_bound(im,angle)
+        cv2.imwrite(dir+fileList[i],nImg)
