@@ -98,10 +98,11 @@ def WriteJson(name,index,statusCode,result,info,mFile,dir):
         "free_q_id":2,#
         "free_resp":"",#
         "survey_id":6,#
-        "front":name,
-        "back":backName,
+        "front":"/static/cards/exhibit/"+name,
+        "back":"/static/cards/exhibit/"+backName,
         "timestamp":str(datetime.datetime.now())
     })
     mFile.write(mData)
+    mFile.write("\n")
 
 

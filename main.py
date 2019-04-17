@@ -13,10 +13,9 @@ mFile=readFile.checkCreate(JSON_DIR)
 
 #   Get the file list in a directory
 fileList=readFile.get_file_list(SCAN_DIR)
-processImage.rotateImage(fileList,270,90,SCAN_DIR)
+#processImage.rotateImage(fileList,270,90,SCAN_DIR)
 
 for i in range(len(fileList)):
-    print("index:"+str(i)+"  "+str(fileList[i]))
     print("index:"+str(i)+"  "+str(fileList[i]))
     src=readFile.get_img(SCAN_DIR+fileList[i])
 
